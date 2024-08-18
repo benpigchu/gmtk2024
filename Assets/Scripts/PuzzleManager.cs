@@ -29,6 +29,7 @@ namespace ScaleSokoban{
 
         enum PuzzleElementKind{
             Player,
+            Box,
         }
 
         class PuzzleElement{
@@ -40,7 +41,8 @@ namespace ScaleSokoban{
 
         public Camera MainCamera;
         public Tilemap Tilemap;
-        public GameObject player;
+        public GameObject Player;
+        public GameObject Box;
 
         public Tile Wall;
         public Tile Ground;
@@ -128,8 +130,11 @@ namespace ScaleSokoban{
 
         GameObject GetPrefabFromKind(PuzzleElementKind kind){
             if(kind==PuzzleElementKind.Player){
-                return player;
+                return Player;
+            }else if(kind==PuzzleElementKind.Box){
+                return Box;
             }
+            Debug.LogError($"No prefab for {kind}");
             return null;
         }
 
@@ -153,7 +158,7 @@ namespace ScaleSokoban{
         }
 
         void LoadTextLevel(string level){
-            var rows=level.Split("\n").Where(str=>str!="").ToList();
+            var rows=level.Split("\n").Where(str=>str!="").Select(str=>str.Trim()).ToList();
             height=rows.Count;
             width=rows[0].Length;
             walls=new bool[height,width];
@@ -175,6 +180,15 @@ namespace ScaleSokoban{
                     }else if(c=='P'){
                         Tilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Player);
+                    }else if(c=='p'){
+                        Tilemap.SetTile(tileLocation,Ground);
+                        AddPuzzleElement(x,y,false,PuzzleElementKind.Player);
+                    }else if(c=='B'){
+                        Tilemap.SetTile(tileLocation,Ground);
+                        AddPuzzleElement(x,y,true,PuzzleElementKind.Box);
+                    }else if(c=='b'){
+                        Tilemap.SetTile(tileLocation,Ground);
+                        AddPuzzleElement(x,y,false,PuzzleElementKind.Box);
                     }else{
                         Tilemap.SetTile(tileLocation,Ground);
                     }
@@ -195,7 +209,6 @@ namespace ScaleSokoban{
 
         void ProcessMovement(int directionX,int directionY){
             foreach(var player in puzzleElements[PuzzleElementKind.Player]){
-                Debug.Log("player step");
                 int moveStep=1;
                 if(player.big){
                     moveStep=3;
@@ -203,7 +216,6 @@ namespace ScaleSokoban{
                 for(int i=0;i<moveStep;i++){
                     var pushingPuzzleElements=GetPushingPuzzleElements(player,directionX,directionY);
                     if(pushingPuzzleElements==null){
-                Debug.Log("player step break");
                         break;
                     }
                     MovePuzzleElements(pushingPuzzleElements,directionX,directionY);
@@ -235,7 +247,6 @@ namespace ScaleSokoban{
             movingPuzzleElements.Add(puzzleElement);
             while(pendingPuzzleElements.Count>0){
                 var current=pendingPuzzleElements.Dequeue();
-                Debug.Log($"current:{current.x} {current.y}");
                 var targets=new List<Vector2Int>();
                 if(current.big){
                     targets.Add(new Vector2Int(current.x+2*directionX+directionY,current.y+2*directionY-directionX));
@@ -245,7 +256,6 @@ namespace ScaleSokoban{
                     targets.Add(new Vector2Int(current.x+directionX,current.y+directionY));
                 }
                 foreach(var target in targets){
-                    Debug.Log($"target:{target.x} {target.y}");
                     if(!(target.x>=0&&target.x<width&&target.y>=0&&target.y<height)){
                         return null;
                     }else if(walls[target.y,target.x]){
@@ -253,9 +263,9 @@ namespace ScaleSokoban{
                     }else{
                         var blocker=puzzleElementColliders[target.y,target.x];
                         if(blocker!=null){
-                            if(!movingPuzzleElements.Contains(puzzleElement)){
-                                pendingPuzzleElements.Enqueue(puzzleElement);
-                                movingPuzzleElements.Add(puzzleElement);
+                            if(!movingPuzzleElements.Contains(blocker)){
+                                pendingPuzzleElements.Enqueue(blocker);
+                                movingPuzzleElements.Add(blocker);
                             }
                         }
                     }
