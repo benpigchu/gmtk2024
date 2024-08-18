@@ -347,7 +347,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 30
+  orthographic size: 24
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -508,6 +508,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 519420031}
   Tilemap: {fileID: 269080109}
+  player: {fileID: 8022251007022358615, guid: 763e8ce888141f9438bae1d199ed5832, type: 3}
   Wall: {fileID: 11400000, guid: b1df0ef1131503c4b89ec822636bb524, type: 2}
   Ground: {fileID: 11400000, guid: 636c2c746a00a2b4695b0318947e9f5f, type: 2}
   InitLevel: {fileID: 4900000, guid: ac379f77ae646064aae569f7bc904dda, type: 3}
