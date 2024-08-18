@@ -200,7 +200,7 @@ TilemapRenderer:
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
-  m_Mode: 0
+  m_Mode: 1
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
 --- !u!1839735485 &269080109
@@ -506,6 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c76737a9e9c7bd47a472cde32c6aa7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MainCamera: {fileID: 519420031}
   Tilemap: {fileID: 269080109}
   Wall: {fileID: 11400000, guid: b1df0ef1131503c4b89ec822636bb524, type: 2}
   Ground: {fileID: 11400000, guid: 636c2c746a00a2b4695b0318947e9f5f, type: 2}
