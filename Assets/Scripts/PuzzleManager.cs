@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 namespace ScaleSokoban{
@@ -29,7 +31,7 @@ namespace ScaleSokoban{
             Player,
         }
 
-        struct PuzzleElement{
+        class PuzzleElement{
             public int x,y;
             public bool big;
             public PuzzleElementKind kind;
@@ -45,9 +47,12 @@ namespace ScaleSokoban{
 
         public TextAsset InitLevel;
         PuzzleManager Instance;
+
+        InputAction Move;
         private void Awake()
         {
             Instance = this;
+            Move=InputSystem.actions.FindAction("Move");
         }
 
         void Start()
@@ -62,7 +67,7 @@ namespace ScaleSokoban{
         bool[,] walls;
         PuzzleElement[,] puzzleElementColliders;
 
-        List<PuzzleElement> puzzleElements;
+        Dictionary<PuzzleElementKind,List<PuzzleElement>> puzzleElements;
 
         static Vector2Int[] offsets3x3=new Vector2Int[]{
             new Vector2Int(-1,-1),
@@ -76,7 +81,7 @@ namespace ScaleSokoban{
             new Vector2Int(1,1),
         };
         public static Vector3Int CoordToTilemapCoord(int x,int y)=>new Vector3Int(x,-y,0);
-        public static Vector3 CoordToTilemapCoord(float x,float y)=>new Vector3(x,-y,0);
+        public static Vector3 CoordToTilemapCoord(float x,float y)=>new Vector3(x,-y+1,0);
 
         void setupWall(int x,int y,bool big){
             if(big){
@@ -88,7 +93,7 @@ namespace ScaleSokoban{
                     }
                 }
             }else{
-                walls[x,y]=true;
+                walls[y,x]=true;
             }
         }
 
@@ -102,7 +107,22 @@ namespace ScaleSokoban{
                     }
                 }
             }else{
-                puzzleElementColliders[element.x,element.y]=element;
+                puzzleElementColliders[element.y,element.x]=element;
+            }
+        }
+        void removeCollider(PuzzleElement element){
+            if(element.big){
+                foreach(var offset in offsets3x3){
+                    var colliderX=offset.x+element.x;
+                    var colliderY=offset.y+element.y;
+                    if(colliderX>=0&&colliderX<width&&colliderY>=0&&colliderY<height&&puzzleElementColliders[colliderY,colliderX]==element){
+                        puzzleElementColliders[colliderY,colliderX]=null;
+                    }
+                }
+            }else{
+                if(puzzleElementColliders[element.x,element.y]==element){
+                    puzzleElementColliders[element.x,element.y]=element;
+                }
             }
         }
 
@@ -120,7 +140,10 @@ namespace ScaleSokoban{
                 big=big,
                 kind=kind,
             };
-            puzzleElements.Add(result);
+            if(!puzzleElements.ContainsKey(kind)){
+                puzzleElements.Add(kind,new List<PuzzleElement>());
+            }
+            puzzleElements[kind].Add(result);
             result.puzzleObject=Instantiate(GetPrefabFromKind(kind),Tilemap.layoutGrid.transform).GetComponent<PuzzleObject>();
             result.puzzleObject.Setup(Tilemap.layoutGrid);
             result.puzzleObject.MoveTo(x,y);
@@ -135,7 +158,7 @@ namespace ScaleSokoban{
             width=rows[0].Length;
             walls=new bool[height,width];
             puzzleElementColliders=new PuzzleElement[height,width];
-            puzzleElements=new List<PuzzleElement>();
+            puzzleElements=new Dictionary<PuzzleElementKind, List<PuzzleElement>>();
             // setup ground tilemap
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
@@ -164,7 +187,81 @@ namespace ScaleSokoban{
         }
         void Update()
         {
+            if(Move.WasPressedThisFrame()){
+                var moveDirection=Move.ReadValue<Vector2>();
+                ProcessMovement(Mathf.RoundToInt(moveDirection.x),-Mathf.RoundToInt(moveDirection.y));
+            }
+        }
 
+        void ProcessMovement(int directionX,int directionY){
+            foreach(var player in puzzleElements[PuzzleElementKind.Player]){
+                Debug.Log("player step");
+                int moveStep=1;
+                if(player.big){
+                    moveStep=3;
+                }
+                for(int i=0;i<moveStep;i++){
+                    var pushingPuzzleElements=GetPushingPuzzleElements(player,directionX,directionY);
+                    if(pushingPuzzleElements==null){
+                Debug.Log("player step break");
+                        break;
+                    }
+                    MovePuzzleElements(pushingPuzzleElements,directionX,directionY);
+                }
+            }
+        }
+
+        void MovePuzzleElements(HashSet<PuzzleElement> puzzleElements,int directionX,int directionY){
+            foreach (var puzzleElement in puzzleElements)
+            {
+                removeCollider(puzzleElement);
+            }
+            foreach (var puzzleElement in puzzleElements)
+            {
+                puzzleElement.x+=directionX;
+                puzzleElement.y+=directionY;
+                puzzleElement.puzzleObject.MoveTo(puzzleElement.x,puzzleElement.y);
+            }
+            foreach (var puzzleElement in puzzleElements)
+            {
+                setupCollider(puzzleElement);
+            }
+        }
+
+        HashSet<PuzzleElement> GetPushingPuzzleElements(PuzzleElement puzzleElement,int directionX,int directionY){
+            var movingPuzzleElements=new HashSet<PuzzleElement>();
+            var pendingPuzzleElements=new Queue<PuzzleElement>();
+            pendingPuzzleElements.Enqueue(puzzleElement);
+            movingPuzzleElements.Add(puzzleElement);
+            while(pendingPuzzleElements.Count>0){
+                var current=pendingPuzzleElements.Dequeue();
+                Debug.Log($"current:{current.x} {current.y}");
+                var targets=new List<Vector2Int>();
+                if(current.big){
+                    targets.Add(new Vector2Int(current.x+2*directionX+directionY,current.y+2*directionY-directionX));
+                    targets.Add(new Vector2Int(current.x+2*directionX,current.y+2*directionY));
+                    targets.Add(new Vector2Int(current.x+2*directionX-directionY,current.y+2*directionY+directionX));
+                }else{
+                    targets.Add(new Vector2Int(current.x+directionX,current.y+directionY));
+                }
+                foreach(var target in targets){
+                    Debug.Log($"target:{target.x} {target.y}");
+                    if(!(target.x>=0&&target.x<width&&target.y>=0&&target.y<height)){
+                        return null;
+                    }else if(walls[target.y,target.x]){
+                        return null;
+                    }else{
+                        var blocker=puzzleElementColliders[target.y,target.x];
+                        if(blocker!=null){
+                            if(!movingPuzzleElements.Contains(puzzleElement)){
+                                pendingPuzzleElements.Enqueue(puzzleElement);
+                                movingPuzzleElements.Add(puzzleElement);
+                            }
+                        }
+                    }
+                }
+            }
+            return movingPuzzleElements;
         }
     }
 
