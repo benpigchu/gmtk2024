@@ -55,16 +55,12 @@ namespace ScaleSokoban{
             LoadTextLevel(InitLevel.text);
         }
 
-        void Update()
-        {
-
-        }
-
         // level data
         int height=0;
         int width=0;
 
         bool[,] walls;
+        PuzzleElement[,] puzzleElementColliders;
 
         List<PuzzleElement> puzzleElements;
 
@@ -82,13 +78,31 @@ namespace ScaleSokoban{
         public static Vector3Int CoordToTilemapCoord(int x,int y)=>new Vector3Int(x,-y,0);
         public static Vector3 CoordToTilemapCoord(float x,float y)=>new Vector3(x,-y,0);
 
-        void setup3x3wall(int x,int y){
-            foreach(var offset in offsets3x3){
-                var wallX=offset.x+x;
-                var wallY=offset.y+y;
-                if(wallX>=0&&wallX<width&&wallY>=0&&wallY<height){
-                    walls[wallY,wallX]=true;
+        void setupWall(int x,int y,bool big){
+            if(big){
+                foreach(var offset in offsets3x3){
+                    var wallX=offset.x+x;
+                    var wallY=offset.y+y;
+                    if(wallX>=0&&wallX<width&&wallY>=0&&wallY<height){
+                        walls[wallY,wallX]=true;
+                    }
                 }
+            }else{
+                walls[x,y]=true;
+            }
+        }
+
+        void setupCollider(PuzzleElement element){
+            if(element.big){
+                foreach(var offset in offsets3x3){
+                    var colliderX=offset.x+element.x;
+                    var colliderY=offset.y+element.y;
+                    if(colliderX>=0&&colliderX<width&&colliderY>=0&&colliderY<height){
+                        puzzleElementColliders[colliderY,colliderX]=element;
+                    }
+                }
+            }else{
+                puzzleElementColliders[element.x,element.y]=element;
             }
         }
 
@@ -111,6 +125,7 @@ namespace ScaleSokoban{
             result.puzzleObject.Setup(Tilemap.layoutGrid);
             result.puzzleObject.MoveTo(x,y);
             result.puzzleObject.SetBig(big);
+            setupCollider(result);
             return result;
         }
 
@@ -119,6 +134,7 @@ namespace ScaleSokoban{
             height=rows.Count;
             width=rows[0].Length;
             walls=new bool[height,width];
+            puzzleElementColliders=new PuzzleElement[height,width];
             puzzleElements=new List<PuzzleElement>();
             // setup ground tilemap
             for(int y=0;y<height;y++){
@@ -128,11 +144,11 @@ namespace ScaleSokoban{
                     if(c=='#'){
                         Tilemap.SetTile(tileLocation,Wall);
                         Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
-                        setup3x3wall(x,y);
+                        setupWall(x,y,true);
                     }else if(c=='*'){
                         Tilemap.SetTile(tileLocation,Wall);
                         Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1)));
-                        walls[y,x]=true;
+                        setupWall(x,y,false);
                     }else if(c=='P'){
                         Tilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Player);
@@ -146,5 +162,10 @@ namespace ScaleSokoban{
             cameraCenter.z=MainCamera.transform.position.z;
             MainCamera.transform.position=cameraCenter;
         }
+        void Update()
+        {
+
+        }
     }
+
 }
