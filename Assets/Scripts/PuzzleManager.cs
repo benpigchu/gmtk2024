@@ -135,7 +135,7 @@ namespace ScaleSokoban{
                 }
             }else{
                 if(puzzleElementColliders[element.y,element.x]==element){
-                    puzzleElementColliders[element.y,element.x]=element;
+                    puzzleElementColliders[element.y,element.x]=null;
                 }
             }
         }
@@ -345,13 +345,12 @@ namespace ScaleSokoban{
                     MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
                     pendingAnimationData.Enqueue(animationData);
                     while(true){
-                        var triggerAnimationData=new List<IAnimationData>();
-                        var playerMoved=CheckPuzzleTriggers(player,triggerAnimationData);
+                        var animationBeforeTrigger=pendingAnimationData.Count;
+                        var playerMoved=CheckPuzzleTriggers(player);
                         playerMovedByTrigger=playerMovedByTrigger||playerMoved;
-                        if(triggerAnimationData.Count<=0){
+                        if(pendingAnimationData.Count<=animationBeforeTrigger){
                             break;
                         }
-                        pendingAnimationData.Enqueue(triggerAnimationData);
                     }
                     if(playerMovedByTrigger){
                         break;
@@ -420,7 +419,7 @@ namespace ScaleSokoban{
             return movingPuzzleElements;
         }
 
-        bool CheckPuzzleTriggers(PuzzleElement initializer,List<IAnimationData> animationData){
+        bool CheckPuzzleTriggers(PuzzleElement initializer){
             bool initializerMoved=false;
             foreach (var shrink in puzzleTriggers[PuzzleTriggerKind.Shrink])
             {
@@ -429,6 +428,7 @@ namespace ScaleSokoban{
                     continue;
                 }
                 if(puzzleElement.big&&puzzleElement.x==shrink.x&&puzzleElement.y==shrink.y){
+                    var animationData=new List<IAnimationData>();
                     if(puzzleElement==initializer){
                         initializerMoved=true;
                     }
@@ -440,6 +440,132 @@ namespace ScaleSokoban{
                     RemoveCollider(puzzleElement);
                     puzzleElement.big=false;
                     SetupCollider(puzzleElement);
+                    pendingAnimationData.Enqueue(animationData);
+                }
+            }
+            foreach (var grow in puzzleTriggers[PuzzleTriggerKind.Grow])
+            {
+                if(!(grow.x>=0&&grow.x<width&&grow.y>=0&&grow.y<height)){
+                    continue;
+                }
+                var puzzleElement=puzzleElementColliders[grow.y,grow.x];
+                if(puzzleElement==null){
+                    continue;
+                }
+                if(!puzzleElement.big){
+                    bool growable=true;
+                    var left=puzzleElementColliders[grow.y,grow.x-1];
+                    var right=puzzleElementColliders[grow.y,grow.x+1];
+                    var up=puzzleElementColliders[grow.y-1,grow.x];
+                    var down=puzzleElementColliders[grow.y+1,grow.x];
+                    var leftUp=puzzleElementColliders[grow.y-1,grow.x-1];
+                    var leftDown=puzzleElementColliders[grow.y+1,grow.x-1];
+                    var rightUp=puzzleElementColliders[grow.y-1,grow.x+1];
+                    var rightDown=puzzleElementColliders[grow.y+1,grow.x+1];
+                    var pushLeft=new HashSet<PuzzleElement>();
+                    var pushRight=new HashSet<PuzzleElement>();
+                    var pushUp=new HashSet<PuzzleElement>();
+                    var pushDown=new HashSet<PuzzleElement>();
+                    if(left!=null){
+                        var result=GetPushingPuzzleElements(left,-1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushLeft.UnionWith(result);
+                        }
+                    }
+                    if(right!=null){
+                        var result=GetPushingPuzzleElements(right,1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushRight.UnionWith(result);
+                        }
+                    }
+                    if(up!=null){
+                        var result=GetPushingPuzzleElements(up,0,-1);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushUp.UnionWith(result);
+                        }
+                    }
+                    if(down!=null){
+                        var result=GetPushingPuzzleElements(down,0,1);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushDown.UnionWith(result);
+                        }
+                    }
+                    // for conner box we always push left/right
+
+                    if(leftUp!=null&&leftUp!=left&&leftUp!=up){
+                        var result=GetPushingPuzzleElements(left,-1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushLeft.UnionWith(result);
+                        }
+                    }
+                    if(leftDown!=null&&leftDown!=left&&leftDown!=down){
+                        var result=GetPushingPuzzleElements(left,-1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushLeft.UnionWith(result);
+                        }
+                    }
+                    if(rightUp!=null&&rightUp!=right&&rightUp!=up){
+                        var result=GetPushingPuzzleElements(right,1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushLeft.UnionWith(result);
+                        }
+                    }
+                    if(rightDown!=null&&rightDown!=right&&rightDown!=down){
+                        var result=GetPushingPuzzleElements(right,1,0);
+                        if(result==null){
+                            growable=false;
+                        }else{
+                            pushRight.UnionWith(result);
+                        }
+                    }
+
+                    if(!growable){
+                        continue;
+                    }
+                    var animationData=new List<IAnimationData>();
+                    if(pushLeft.Contains(initializer)){
+                        initializerMoved=true;
+                    }
+                    if(pushRight.Contains(initializer)){
+                        initializerMoved=true;
+                    }
+                    if(pushUp.Contains(initializer)){
+                        initializerMoved=true;
+                    }
+                    if(pushDown.Contains(initializer)){
+                        initializerMoved=true;
+                    }
+                    if(puzzleElement==initializer){
+                        initializerMoved=true;
+                    }
+                    MovePuzzleElements(pushLeft,-1,0,animationData);
+                    MovePuzzleElements(pushRight,1,0,animationData);
+                    MovePuzzleElements(pushUp,0,-1,animationData);
+                    MovePuzzleElements(pushDown,0,1,animationData);
+
+                    animationData.Add(new ScaleAnimationData{
+                        PuzzleObject=puzzleElement.puzzleObject,
+                        StartBig=0,
+                        EndBig=1,
+                    });
+                    RemoveCollider(puzzleElement);
+                    puzzleElement.big=true;
+                    SetupCollider(puzzleElement);
+                    pendingAnimationData.Enqueue(animationData);
                 }
             }
             return initializerMoved;
