@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Unity.Collections;
@@ -15,13 +16,14 @@ namespace ScaleSokoban{
         public void Setup(Grid grid){
             this.grid=grid;
         }
-        public void MoveTo(int x,int y){
+        public void MoveTo(float x,float y){
             var position=grid.CellToLocalInterpolated(PuzzleManager.CoordToTilemapCoord(x+0.5f,y+0.5f));
             position.z=-2;
             transform.position=position;
         }
-        public void SetBig(bool big){
-            transform.localScale=big?new Vector3(3,3,1):new Vector3(1,1,1);
+        public void SetBig(float bigPortion){
+            float scale=Mathf.Lerp(1,3,bigPortion);
+            transform.localScale=new Vector3(scale,scale,1);
         }
     }
     public class PuzzleManager : MonoBehaviour
@@ -152,7 +154,7 @@ namespace ScaleSokoban{
             result.puzzleObject=Instantiate(GetPrefabFromKind(kind),Tilemap.layoutGrid.transform).GetComponent<PuzzleObject>();
             result.puzzleObject.Setup(Tilemap.layoutGrid);
             result.puzzleObject.MoveTo(x,y);
-            result.puzzleObject.SetBig(big);
+            result.puzzleObject.SetBig(big?1:0);
             setupCollider(result);
             return result;
         }
@@ -199,12 +201,69 @@ namespace ScaleSokoban{
             cameraCenter.z=MainCamera.transform.position.z;
             MainCamera.transform.position=cameraCenter;
         }
+
+        //movement animation
+        interface IAnimationData{
+            public void Seek(float portion);
+        }
+        struct MoveAnimationData:IAnimationData{
+            public PuzzleObject PuzzleObject;
+            public float StartX,StartY,EndX,EndY;
+
+            public void Seek(float portion)
+            {
+                PuzzleObject.MoveTo(Mathf.Lerp(StartX,EndX,portion),Mathf.Lerp(StartY,EndY,portion));
+            }
+        }
+        Queue<List<IAnimationData>> pendingAnimationData=new Queue<List<IAnimationData>>();
+        List<IAnimationData> currentAnimationData=null;
+
+        float currentAnimationProgress=0;
+
+        public float AnimationStepLength=0.2f;
+
         void Update()
         {
+            if(UpdateAnimation()){
+                return;
+            }
             if(Move.WasPressedThisFrame()){
                 var moveDirection=Move.ReadValue<Vector2>();
                 ProcessMovement(Mathf.RoundToInt(moveDirection.x),-Mathf.RoundToInt(moveDirection.y));
             }
+        }
+
+        private bool UpdateAnimation()
+        {
+            if(currentAnimationData==null){
+                if(pendingAnimationData.Count>0){
+                    currentAnimationData=pendingAnimationData.Dequeue();
+                    currentAnimationProgress=0;
+                }else{
+                    return false;
+                }
+            }
+            currentAnimationProgress+=Time.deltaTime/AnimationStepLength;
+            while(currentAnimationProgress>=1){
+                currentAnimationProgress-=1;
+                foreach (var animation in currentAnimationData)
+                {
+                    animation.Seek(1);
+                }
+                if(pendingAnimationData.Count>0){
+                    currentAnimationData=pendingAnimationData.Dequeue();
+                }else{
+                    currentAnimationData=null;
+                    break;
+                }
+            }
+            if(currentAnimationData!=null){
+                foreach (var animation in currentAnimationData)
+                {
+                    animation.Seek(currentAnimationProgress);
+                }
+            }
+            return true;
         }
 
         void ProcessMovement(int directionX,int directionY){
@@ -218,21 +277,29 @@ namespace ScaleSokoban{
                     if(pushingPuzzleElements==null){
                         break;
                     }
-                    MovePuzzleElements(pushingPuzzleElements,directionX,directionY);
+                    var animationData=new List<IAnimationData>();
+                    MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
+                    pendingAnimationData.Enqueue(animationData);
                 }
             }
         }
 
-        void MovePuzzleElements(HashSet<PuzzleElement> puzzleElements,int directionX,int directionY){
+        void MovePuzzleElements(HashSet<PuzzleElement> puzzleElements,int directionX,int directionY,List<IAnimationData> animationData){
             foreach (var puzzleElement in puzzleElements)
             {
                 removeCollider(puzzleElement);
             }
             foreach (var puzzleElement in puzzleElements)
             {
+                animationData.Add(new MoveAnimationData{
+                    PuzzleObject=puzzleElement.puzzleObject,
+                    StartX=puzzleElement.x,
+                    StartY=puzzleElement.y,
+                    EndX=puzzleElement.x+directionX,
+                    EndY=puzzleElement.y+directionY,
+                });
                 puzzleElement.x+=directionX;
                 puzzleElement.y+=directionY;
-                puzzleElement.puzzleObject.MoveTo(puzzleElement.x,puzzleElement.y);
             }
             foreach (var puzzleElement in puzzleElements)
             {

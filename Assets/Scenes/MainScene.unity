@@ -513,6 +513,7 @@ MonoBehaviour:
   Wall: {fileID: 11400000, guid: b1df0ef1131503c4b89ec822636bb524, type: 2}
   Ground: {fileID: 11400000, guid: 636c2c746a00a2b4695b0318947e9f5f, type: 2}
   InitLevel: {fileID: 4900000, guid: ac379f77ae646064aae569f7bc904dda, type: 3}
+  AnimationStepLength: 0.1
 --- !u!1 &1553793169
 GameObject:
   m_ObjectHideFlags: 0
