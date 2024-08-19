@@ -41,6 +41,11 @@ namespace ScaleSokoban{
             public PuzzleObject puzzleObject;
         }
 
+        enum PuzzleTriggerKind{
+            Grow,
+            Shrink,
+        }
+
         public Camera MainCamera;
         public Tilemap Tilemap;
         public GameObject Player;
@@ -48,6 +53,8 @@ namespace ScaleSokoban{
 
         public Tile Wall;
         public Tile Ground;
+        public Tile Grow;
+        public Tile Shrink;
 
         public TextAsset InitLevel;
         PuzzleManager Instance;
@@ -74,6 +81,7 @@ namespace ScaleSokoban{
         PuzzleElement[,] puzzleElementColliders;
 
         Dictionary<PuzzleElementKind,List<PuzzleElement>> puzzleElements;
+        Dictionary<PuzzleTriggerKind,List<Vector2Int>> puzzleTriggers;
 
         static Vector2Int[] offsets3x3=new Vector2Int[]{
             new Vector2Int(-1,-1),
@@ -160,6 +168,12 @@ namespace ScaleSokoban{
             SetupCollider(result);
             return result;
         }
+        void AddPuzzleTrigger(int x,int y,PuzzleTriggerKind kind){
+            if(!puzzleTriggers.ContainsKey(kind)){
+                puzzleTriggers.Add(kind,new List<Vector2Int>());
+            }
+            puzzleTriggers[kind].Add(new Vector2Int(x,y));
+        }
 
         void LoadTextLevel(string level){
             var rows=level.Split("\n").Where(str=>str!="").Select(str=>str.Trim()).ToList();
@@ -168,6 +182,7 @@ namespace ScaleSokoban{
             walls=new bool[height,width];
             puzzleElementColliders=new PuzzleElement[height,width];
             puzzleElements=new Dictionary<PuzzleElementKind, List<PuzzleElement>>();
+            puzzleTriggers=new Dictionary<PuzzleTriggerKind, List<Vector2Int>>();
             // setup ground tilemap
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
@@ -181,6 +196,14 @@ namespace ScaleSokoban{
                         Tilemap.SetTile(tileLocation,Wall);
                         Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1)));
                         setupWall(x,y,false);
+                    }else if(c=='X'){
+                        Tilemap.SetTile(tileLocation,Grow);
+                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
+                        AddPuzzleTrigger(x,y,PuzzleTriggerKind.Grow);
+                    }else if(c=='x'){
+                        Tilemap.SetTile(tileLocation,Shrink);
+                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
+                        AddPuzzleTrigger(x,y,PuzzleTriggerKind.Shrink);
                     }else if(c=='P'){
                         Tilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Player);
@@ -215,6 +238,15 @@ namespace ScaleSokoban{
             public void Seek(float portion)
             {
                 PuzzleObject.MoveTo(Mathf.Lerp(StartX,EndX,portion),Mathf.Lerp(StartY,EndY,portion));
+            }
+        }
+        struct ScaleAnimationData:IAnimationData{
+            public PuzzleObject PuzzleObject;
+            public float StartBig,EndBig;
+
+            public void Seek(float portion)
+            {
+                PuzzleObject.SetBig(Mathf.Lerp(StartBig,EndBig,portion));
             }
         }
         Queue<List<IAnimationData>> pendingAnimationData=new Queue<List<IAnimationData>>();
@@ -298,6 +330,7 @@ namespace ScaleSokoban{
             CaptureHistory();
             bool noMovement=true;
             foreach(var player in puzzleElements[PuzzleElementKind.Player]){
+                bool playerMovedByTrigger=false;
                 int moveStep=1;
                 if(player.big){
                     moveStep=3;
@@ -311,6 +344,18 @@ namespace ScaleSokoban{
                     var animationData=new List<IAnimationData>();
                     MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
                     pendingAnimationData.Enqueue(animationData);
+                    while(true){
+                        var triggerAnimationData=new List<IAnimationData>();
+                        var playerMoved=CheckPuzzleTriggers(player,triggerAnimationData);
+                        playerMovedByTrigger=playerMovedByTrigger||playerMoved;
+                        if(triggerAnimationData.Count<=0){
+                            break;
+                        }
+                        pendingAnimationData.Enqueue(triggerAnimationData);
+                    }
+                    if(playerMovedByTrigger){
+                        break;
+                    }
                 }
             }
             if(noMovement){
@@ -373,6 +418,31 @@ namespace ScaleSokoban{
                 }
             }
             return movingPuzzleElements;
+        }
+
+        bool CheckPuzzleTriggers(PuzzleElement initializer,List<IAnimationData> animationData){
+            bool initializerMoved=false;
+            foreach (var shrink in puzzleTriggers[PuzzleTriggerKind.Shrink])
+            {
+                var puzzleElement=puzzleElementColliders[shrink.y,shrink.x];
+                if(puzzleElement==null){
+                    continue;
+                }
+                if(puzzleElement.big&&puzzleElement.x==shrink.x&&puzzleElement.y==shrink.y){
+                    if(puzzleElement==initializer){
+                        initializerMoved=true;
+                    }
+                    animationData.Add(new ScaleAnimationData{
+                        PuzzleObject=puzzleElement.puzzleObject,
+                        StartBig=1,
+                        EndBig=0,
+                    });
+                    RemoveCollider(puzzleElement);
+                    puzzleElement.big=false;
+                    SetupCollider(puzzleElement);
+                }
+            }
+            return initializerMoved;
         }
 
         //undo

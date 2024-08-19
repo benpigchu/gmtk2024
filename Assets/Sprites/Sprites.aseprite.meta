@@ -153,7 +153,7 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 4
-      y: 4
+      y: 19
       width: 15
       height: 15
     spriteID: 5b7f879357c9bed48b7c1a1975012b64
@@ -174,7 +174,7 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 19
-      y: 4
+      y: 19
       width: 15
       height: 15
     spriteID: b8f82d4435058be4ea0c9d38aebc0a5a
@@ -195,7 +195,7 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 34
-      y: 4
+      y: 19
       width: 15
       height: 15
     spriteID: 4883a5f5215a81d4083f7154fc32ef5f
@@ -216,10 +216,52 @@ ScriptedImporter:
     rect:
       serializedVersion: 2
       x: 49
-      y: 4
+      y: 19
       width: 15
       height: 15
     spriteID: d21f9e5de016f774da12582e698002d4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: shrink
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 4
+      width: 15
+      height: 15
+    spriteID: 01b3b9e2a91f8d84d9bae31409059140
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  - name: grow
+    originalName: 
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    customData: 
+    rect:
+      serializedVersion: 2
+      x: 19
+      y: 4
+      width: 15
+      height: 15
+    spriteID: 5ac95390fe61d7045806425668c59db3
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -241,9 +283,9 @@ ScriptedImporter:
       additiveSortOrder: 0
       cellRect:
         x: 0
-        y: 45
+        y: 30
         width: 60
-        height: 15
+        height: 30
       spriteId: dae2561995958f8499b61a0ce678150c
     linkedCells: []
     parentIndex: -1
