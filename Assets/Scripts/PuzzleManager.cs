@@ -126,8 +126,8 @@ namespace ScaleSokoban{
                     }
                 }
             }else{
-                if(puzzleElementColliders[element.x,element.y]==element){
-                    puzzleElementColliders[element.x,element.y]=element;
+                if(puzzleElementColliders[element.y,element.x]==element){
+                    puzzleElementColliders[element.y,element.x]=element;
                 }
             }
         }
