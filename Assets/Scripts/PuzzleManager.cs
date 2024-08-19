@@ -52,11 +52,13 @@ namespace ScaleSokoban{
         public TextAsset InitLevel;
         PuzzleManager Instance;
 
-        InputAction Move;
+        InputAction MoveAction;
+        InputAction UndoAction;
         private void Awake()
         {
             Instance = this;
-            Move=InputSystem.actions.FindAction("Move");
+            MoveAction=InputSystem.actions.FindAction("Move");
+            UndoAction=InputSystem.actions.FindAction("Undo");
         }
 
         void Start()
@@ -101,7 +103,7 @@ namespace ScaleSokoban{
             }
         }
 
-        void setupCollider(PuzzleElement element){
+        void SetupCollider(PuzzleElement element){
             if(element.big){
                 foreach(var offset in offsets3x3){
                     var colliderX=offset.x+element.x;
@@ -114,7 +116,7 @@ namespace ScaleSokoban{
                 puzzleElementColliders[element.y,element.x]=element;
             }
         }
-        void removeCollider(PuzzleElement element){
+        void RemoveCollider(PuzzleElement element){
             if(element.big){
                 foreach(var offset in offsets3x3){
                     var colliderX=offset.x+element.x;
@@ -155,7 +157,7 @@ namespace ScaleSokoban{
             result.puzzleObject.Setup(Tilemap.layoutGrid);
             result.puzzleObject.MoveTo(x,y);
             result.puzzleObject.SetBig(big?1:0);
-            setupCollider(result);
+            SetupCollider(result);
             return result;
         }
 
@@ -224,12 +226,21 @@ namespace ScaleSokoban{
 
         void Update()
         {
+            if(UndoAction.WasPressedThisFrame()){
+                Undo();
+                return;
+            }
             if(UpdateAnimation()){
                 return;
             }
-            if(Move.WasPressedThisFrame()){
-                var moveDirection=Move.ReadValue<Vector2>();
-                ProcessMovement(Mathf.RoundToInt(moveDirection.x),-Mathf.RoundToInt(moveDirection.y));
+            if(MoveAction.WasPressedThisFrame()){
+                var moveDirection=MoveAction.ReadValue<Vector2>();
+                var x=Math.Sign(Mathf.RoundToInt(moveDirection.x));
+                var y=-Math.Sign(Mathf.RoundToInt(moveDirection.y));
+                if(x!=0){
+                    y=0;
+                }
+                ProcessMovement(x,y);
             }
         }
 
@@ -266,7 +277,26 @@ namespace ScaleSokoban{
             return true;
         }
 
+        void ResetAnimation(){
+            pendingAnimationData.Clear();
+            currentAnimationData=null;
+            currentAnimationProgress=0;
+        }
+
+        void ApplyPuzzleObjectStates(){
+            foreach (var puzzleElementsByKind in puzzleElements.Values)
+            {
+                foreach (var puzzleElement in puzzleElementsByKind)
+                {
+                    puzzleElement.puzzleObject.MoveTo(puzzleElement.x,puzzleElement.y);
+                    puzzleElement.puzzleObject.SetBig(puzzleElement.big?1:0);
+                }
+            }
+        }
+
         void ProcessMovement(int directionX,int directionY){
+            CaptureHistory();
+            bool noMovement=true;
             foreach(var player in puzzleElements[PuzzleElementKind.Player]){
                 int moveStep=1;
                 if(player.big){
@@ -277,17 +307,21 @@ namespace ScaleSokoban{
                     if(pushingPuzzleElements==null){
                         break;
                     }
+                    noMovement=false;
                     var animationData=new List<IAnimationData>();
                     MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
                     pendingAnimationData.Enqueue(animationData);
                 }
+            }
+            if(noMovement){
+                historyStates.Pop();
             }
         }
 
         void MovePuzzleElements(HashSet<PuzzleElement> puzzleElements,int directionX,int directionY,List<IAnimationData> animationData){
             foreach (var puzzleElement in puzzleElements)
             {
-                removeCollider(puzzleElement);
+                RemoveCollider(puzzleElement);
             }
             foreach (var puzzleElement in puzzleElements)
             {
@@ -303,7 +337,7 @@ namespace ScaleSokoban{
             }
             foreach (var puzzleElement in puzzleElements)
             {
-                setupCollider(puzzleElement);
+                SetupCollider(puzzleElement);
             }
         }
 
@@ -340,6 +374,69 @@ namespace ScaleSokoban{
             }
             return movingPuzzleElements;
         }
+
+        //undo
+        interface IHistoryStateEntry{
+            public void Recover();
+        }
+        struct PuzzleElementState : IHistoryStateEntry
+        {
+            public bool big;
+            public int x;
+            public int y;
+            public PuzzleElement puzzleElement;
+            public void Recover()
+            {
+                puzzleElement.big=big;
+                puzzleElement.x=x;
+                puzzleElement.y=y;
+            }
+        }
+
+        Stack<List<IHistoryStateEntry>> historyStates=new Stack<List<IHistoryStateEntry>>();
+
+        void CaptureHistory(){
+            var entries=new List<IHistoryStateEntry>();
+            foreach (var puzzleElementsByKind in puzzleElements.Values)
+            {
+                foreach (var puzzleElement in puzzleElementsByKind)
+                {
+                    entries.Add(new PuzzleElementState{
+                        puzzleElement=puzzleElement,
+                        big=puzzleElement.big,
+                        x=puzzleElement.x,
+                        y=puzzleElement.y,
+                    });
+                }
+            }
+            historyStates.Push(entries);
+        }
+        void Undo(){
+            ResetAnimation();
+            if(historyStates.Count>0){
+                var entries=historyStates.Pop();
+                foreach (var puzzleElementsByKind in puzzleElements.Values)
+                {
+                    foreach (var puzzleElement in puzzleElementsByKind)
+                    {
+                        RemoveCollider(puzzleElement);
+                    }
+                }
+                foreach (var entry in entries)
+                {
+                    entry.Recover();
+                }
+                foreach (var puzzleElementsByKind in puzzleElements.Values)
+                {
+                    foreach (var puzzleElement in puzzleElementsByKind)
+                    {
+                        SetupCollider(puzzleElement);
+                    }
+                }
+            }
+            ApplyPuzzleObjectStates();
+        }
     }
+
 
 }
