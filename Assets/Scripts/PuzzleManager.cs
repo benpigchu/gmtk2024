@@ -740,6 +740,9 @@ namespace ScaleSokoban{
                 if(puzzleElement==null){
                     return;
                 }
+                if(puzzleElement.kind!=PuzzleElementKind.Box){
+                    return;
+                }
                 if(puzzleElement.x!=target.x||puzzleElement.y!=target.y||puzzleElement.big!=target.big){
                     return;
                 }
