@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ScaleSokoban;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -14,23 +14,30 @@ namespace ScaleSokoban{
         }
         public List<TextAsset> Levels=new List<TextAsset>();
         public TextAsset TutorialTexts;
+
+        List<string> parsedTutorialTexts;
         public TextAsset DemoLevel;
 
         public RectTransform TitleScreen;
         public RectTransform PauseMenu;
+        public RectTransform LevelIntro;
         public LevelSelector LevelSelector;
         public TMP_Text PauseLevelText;
+        public TMP_Text IntroLevelText;
+        public TMP_Text IntroTutorialText;
         public static GameManager Instance;
 
         private bool paused=false;
+        private bool levelIntroVisible=false;
 
-        public bool BlockPuzzleInput{get=>paused;}
+        public bool BlockPuzzleInput{get=>paused||levelIntroVisible;}
 
         private int currentLevel=0;
         private GameScreen currentScreen=GameScreen.Title;
         private void Awake()
         {
             Instance = this;
+            parsedTutorialTexts=TutorialTexts.text.Split("\n").Select(str=>str.Trim()).ToList();
         }
         void Start()
         {
@@ -58,14 +65,29 @@ namespace ScaleSokoban{
             UpdateLevelSelector();
             if(gameScreen==GameScreen.Title){
                 PuzzleManager.Instance.LoadTextLevel(DemoLevel.text,LevelMode.Demo);
+                LevelIntro.gameObject.SetActive(false);
+                levelIntroVisible=false;
             }else if(gameScreen==GameScreen.Puzzle){
                 PuzzleManager.Instance.LoadTextLevel(Levels[currentLevel].text,LevelMode.Puzzle);
+                SetupLevelIntro();
             }
             TitleScreen.gameObject.SetActive(gameScreen==GameScreen.Title);
             paused=false;
             PauseMenu.gameObject.SetActive(false);
             currentScreen=gameScreen;
         }
+
+        void SetupLevelIntro(){
+            levelIntroVisible=true;
+            IntroLevelText.text=$"level {currentLevel+1:00}";
+            if(currentLevel>=parsedTutorialTexts.Count){
+                IntroTutorialText.text="";
+            }else{
+                IntroTutorialText.text=parsedTutorialTexts[currentLevel];
+            }
+            LevelIntro.gameObject.SetActive(true);
+        }
+
         public void CompleteLevel(){
             if(currentLevel+1<Levels.Count){
                 currentLevel+=1;
@@ -90,6 +112,10 @@ namespace ScaleSokoban{
         }
         public void ExitToMenu(){
             SwitchToGameScreen(GameScreen.Title);
+        }
+        public void FinishLevelIntro(){
+            LevelIntro.gameObject.SetActive(false);
+            levelIntroVisible=false;
         }
     }
 }
