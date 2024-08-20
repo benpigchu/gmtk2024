@@ -2,3 +2,5 @@ Let's start with a totally normal sokoban.
 Scale down yourself with the shrinker pad.
 You can't push big box before scaling up.
 The box can be scaled too.
+You can push two boxes at the same time.
+Alignment matters.

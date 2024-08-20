@@ -1871,7 +1871,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.5019608}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.7490196}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1968,6 +1968,9 @@ MonoBehaviour:
   Levels:
   - {fileID: 4900000, guid: 18ae9d51a0266ff4b9fc70c2bff8d2b8, type: 3}
   - {fileID: 4900000, guid: 9b21f56ae2966a5409c792dd2e636ace, type: 3}
+  - {fileID: 4900000, guid: a2c19025b4c051b49913721004d0469c, type: 3}
+  - {fileID: 4900000, guid: 2a993ed6a91e9e5498ca5d18abaaaba3, type: 3}
+  - {fileID: 4900000, guid: daaea4100459d0e4d9b2dfe068a72f9f, type: 3}
   TutorialTexts: {fileID: 4900000, guid: 92681dbc2db9ff548b3777d6bd684c7a, type: 3}
   DemoLevel: {fileID: 4900000, guid: 4ab41128be4a73a4a87341a58cc6651f, type: 3}
   TitleScreen: {fileID: 1476462566}
@@ -2798,7 +2801,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.5019608}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.7490196}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
