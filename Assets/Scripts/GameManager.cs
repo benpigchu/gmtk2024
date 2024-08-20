@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
     public List<TextAsset> Levels=new List<TextAsset>();
     public TextAsset TutorialTexts;
     public TextAsset DemoLevel;
+
+    public RectTransform TitleScreen;
     public static GameManager Instance;
     private void Awake()
     {
