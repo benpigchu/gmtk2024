@@ -9,6 +9,12 @@ using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 namespace ScaleSokoban{
+
+    public enum LevelMode{
+        Demo,
+        Puzzle,
+    }
+
     public abstract class PuzzleObject : MonoBehaviour
     {
         Grid grid;
@@ -58,8 +64,7 @@ namespace ScaleSokoban{
         public Tile Shrink;
         public Tile Target;
 
-        public TextAsset InitLevel;
-        PuzzleManager Instance;
+        public static PuzzleManager Instance;
 
         InputAction MoveAction;
         InputAction UndoAction;
@@ -72,10 +77,13 @@ namespace ScaleSokoban{
 
         void Start()
         {
-            LoadTextLevel(InitLevel.text);
         }
 
         // level data
+
+        bool levelLoaded=false;
+
+        LevelMode levelMode=LevelMode.Demo;
         int height=0;
         int width=0;
 
@@ -177,7 +185,7 @@ namespace ScaleSokoban{
             puzzleTriggers[kind].Add(new Vector2Int(x,y));
         }
 
-        void LoadTextLevel(string level){
+        public void LoadTextLevel(string level,LevelMode levelMode){
             var rows=level.Split("\n").Where(str=>str!="").Select(str=>str.Trim()).ToList();
             height=rows.Count;
             width=rows[0].Length;
@@ -234,6 +242,8 @@ namespace ScaleSokoban{
             var cameraCenter=BackgroundTilemap.layoutGrid.CellToLocalInterpolated(CoordToTilemapCoord(width/2f,height/2f));
             cameraCenter.z=MainCamera.transform.position.z;
             MainCamera.transform.position=cameraCenter;
+            levelLoaded=true;
+            this.levelMode=levelMode;
         }
 
         //movement animation
@@ -267,14 +277,17 @@ namespace ScaleSokoban{
 
         void Update()
         {
-            if(UndoAction.WasPressedThisFrame()){
+            if(!levelLoaded){
+                return;
+            }
+            if(levelMode==LevelMode.Puzzle&&UndoAction.WasPressedThisFrame()){
                 Undo();
                 return;
             }
             if(UpdateAnimation()){
                 return;
             }
-            if(MoveAction.WasPressedThisFrame()){
+            if(levelMode==LevelMode.Puzzle&&MoveAction.WasPressedThisFrame()){
                 var moveDirection=MoveAction.ReadValue<Vector2>();
                 var x=Math.Sign(Mathf.RoundToInt(moveDirection.x));
                 var y=-Math.Sign(Mathf.RoundToInt(moveDirection.y));
