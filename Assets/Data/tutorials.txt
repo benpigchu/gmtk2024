@@ -1,6 +1,6 @@
-Let's start with a totally normal sokoban.
+Let's start with a totally normal Sokoban.
 Scale down yourself with the shrinker pad.
-You can't push big box before scaling up.
+You can't push big boxes before scaling up.
 The box can be scaled too.
 You can push two boxes at the same time.
 Alignment matters.

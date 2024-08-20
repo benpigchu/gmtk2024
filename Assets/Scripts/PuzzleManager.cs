@@ -219,6 +219,7 @@ namespace ScaleSokoban{
             puzzleTargets=null;
             completed=false;
             completedTimer=0;
+            demoTimer=0;
         }
 
         public void LoadTextLevel(string level,LevelMode levelMode){
@@ -353,6 +354,9 @@ namespace ScaleSokoban{
             if(UpdateAnimation()){
                 return;
             }
+            if(levelMode==LevelMode.Demo){
+                ProcessDemo();
+            }
             if(!inputBlocked&&MoveAction.WasPressedThisFrame()){
                 var moveDirection=MoveAction.ReadValue<Vector2>();
                 var x=Math.Sign(Mathf.RoundToInt(moveDirection.x));
@@ -361,6 +365,23 @@ namespace ScaleSokoban{
                     y=0;
                 }
                 ProcessMovement(x,y);
+            }
+        }
+
+        float demoTimer=0;
+        public float DemoTimerLength=0.5f;
+
+        private void ProcessDemo()
+        {
+            demoTimer+=Time.deltaTime;
+            if(demoTimer>DemoTimerLength){
+                demoTimer=0;
+                var player=puzzleElements[PuzzleElementKind.Player][0];
+                if(player.big){
+                    ProcessMovement(1,0);
+                }else{
+                    ProcessMovement(-1,0);
+                }
             }
         }
 
@@ -442,7 +463,9 @@ namespace ScaleSokoban{
                         noMovement=false;
                         var animationData=new List<IAnimationData>();
                         MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
-                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Move});
+                        if(levelMode==LevelMode.Puzzle){
+                            animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Move});
+                        }
                         pendingAnimationData.Enqueue(animationData);
                         while(true){
                             var animationBeforeTrigger=pendingAnimationData.Count;
@@ -545,7 +568,9 @@ namespace ScaleSokoban{
                         RemoveCollider(puzzleElement);
                         puzzleElement.big=false;
                         SetupCollider(puzzleElement);
-                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
+                        if(levelMode==LevelMode.Puzzle){
+                            animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
+                        }
                         pendingAnimationData.Enqueue(animationData);
                     }
                 }
@@ -673,7 +698,9 @@ namespace ScaleSokoban{
                         RemoveCollider(puzzleElement);
                         puzzleElement.big=true;
                         SetupCollider(puzzleElement);
-                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
+                        if(levelMode==LevelMode.Puzzle){
+                            animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
+                        }
                         pendingAnimationData.Enqueue(animationData);
                     }
                 }

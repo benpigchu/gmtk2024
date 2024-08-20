@@ -1954,6 +1954,7 @@ MonoBehaviour:
   Shrink: {fileID: 11400000, guid: b2ff74de401376440adb80c1e0351c9d, type: 2}
   Target: {fileID: 11400000, guid: 57804a4e0a06b2849ae2af87de739b14, type: 2}
   AnimationStepLength: 0.1
+  DemoTimerLength: 0.5
   CompleteTimeLength: 1
 --- !u!114 &1430550329
 MonoBehaviour:
@@ -1975,12 +1976,16 @@ MonoBehaviour:
   - {fileID: 4900000, guid: daaea4100459d0e4d9b2dfe068a72f9f, type: 3}
   - {fileID: 4900000, guid: 0177950d6329bbe49a61036ab1c3585e, type: 3}
   - {fileID: 4900000, guid: 8f1c745a7b1f6c5418d4af6cbe19a0af, type: 3}
+  - {fileID: 4900000, guid: 74ba75389c8cb56499d3d7928b054117, type: 3}
   - {fileID: 4900000, guid: 22b5be1c7d080ef4aa6a7a99770de47d, type: 3}
+  - {fileID: 4900000, guid: 74f5269680d36b94d9f717e6ddf3e6fe, type: 3}
   - {fileID: 4900000, guid: d26c4a51b6b58af4c8280f7bde2f2251, type: 3}
-  - {fileID: 4900000, guid: fb3f1f49e10099d478168ead0c29e34c, type: 3}
   - {fileID: 4900000, guid: eb4e031655f947d4bb02f556950dd5a4, type: 3}
+  - {fileID: 4900000, guid: fb3f1f49e10099d478168ead0c29e34c, type: 3}
   - {fileID: 4900000, guid: e642d62b692b478478c6ca05423f5cde, type: 3}
+  - {fileID: 4900000, guid: 18f9c3965efc8c84ab72cfefa034ed0b, type: 3}
   - {fileID: 4900000, guid: 523a8900268243545915da879638f195, type: 3}
+  - {fileID: 4900000, guid: 39cecaf9a0ed6c34f89a65bc7501f695, type: 3}
   - {fileID: 4900000, guid: cfe1d220f8b26444285dd407a42c1c7d, type: 3}
   TutorialTexts: {fileID: 4900000, guid: 92681dbc2db9ff548b3777d6bd684c7a, type: 3}
   DemoLevel: {fileID: 4900000, guid: 4ab41128be4a73a4a87341a58cc6651f, type: 3}
