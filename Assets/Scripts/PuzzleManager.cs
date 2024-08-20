@@ -609,7 +609,7 @@ namespace ScaleSokoban{
                         // for conner box we always push left/right
 
                         if(leftUp!=null&&leftUp!=left&&leftUp!=up){
-                            var result=GetPushingPuzzleElements(left,-1,0);
+                            var result=GetPushingPuzzleElements(leftUp,-1,0);
                             if(result==null){
                                 growable=false;
                             }else{
@@ -617,7 +617,7 @@ namespace ScaleSokoban{
                             }
                         }
                         if(leftDown!=null&&leftDown!=left&&leftDown!=down){
-                            var result=GetPushingPuzzleElements(left,-1,0);
+                            var result=GetPushingPuzzleElements(leftDown,-1,0);
                             if(result==null){
                                 growable=false;
                             }else{
@@ -625,7 +625,7 @@ namespace ScaleSokoban{
                             }
                         }
                         if(rightUp!=null&&rightUp!=right&&rightUp!=up){
-                            var result=GetPushingPuzzleElements(right,1,0);
+                            var result=GetPushingPuzzleElements(rightUp,1,0);
                             if(result==null){
                                 growable=false;
                             }else{
@@ -633,7 +633,7 @@ namespace ScaleSokoban{
                             }
                         }
                         if(rightDown!=null&&rightDown!=right&&rightDown!=down){
-                            var result=GetPushingPuzzleElements(right,1,0);
+                            var result=GetPushingPuzzleElements(rightDown,1,0);
                             if(result==null){
                                 growable=false;
                             }else{
