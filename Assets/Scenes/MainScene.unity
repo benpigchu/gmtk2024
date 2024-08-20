@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 269080109}
   - component: {fileID: 269080108}
   m_Layer: 0
-  m_Name: Tilemap
+  m_Name: BackgroundTilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -512,6 +512,8 @@ MonoBehaviour:
   Box: {fileID: 7577722404682167128, guid: 3ff4fe36a8ef90941ad6f652b652f943, type: 3}
   Wall: {fileID: 11400000, guid: b1df0ef1131503c4b89ec822636bb524, type: 2}
   Ground: {fileID: 11400000, guid: 636c2c746a00a2b4695b0318947e9f5f, type: 2}
+  Grow: {fileID: 11400000, guid: 2fcdcd7482c7b8746be5b011af5ba541, type: 2}
+  Shrink: {fileID: 11400000, guid: b2ff74de401376440adb80c1e0351c9d, type: 2}
   InitLevel: {fileID: 4900000, guid: ac379f77ae646064aae569f7bc904dda, type: 3}
   AnimationStepLength: 0.1
 --- !u!1 &1553793169

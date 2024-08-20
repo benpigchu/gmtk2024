@@ -336,7 +336,7 @@ namespace ScaleSokoban{
                     moveStep=3;
                 }
                 for(int i=0;i<moveStep;i++){
-                    var pushingPuzzleElements=GetPushingPuzzleElements(player,directionX,directionY);
+                    var pushingPuzzleElements=GetPushingPuzzleElements(player,directionX,directionY,!player.big);
                     if(pushingPuzzleElements==null){
                         break;
                     }
@@ -385,7 +385,7 @@ namespace ScaleSokoban{
             }
         }
 
-        HashSet<PuzzleElement> GetPushingPuzzleElements(PuzzleElement puzzleElement,int directionX,int directionY){
+        HashSet<PuzzleElement> GetPushingPuzzleElements(PuzzleElement puzzleElement,int directionX,int directionY,bool limitPushPower=false){
             var movingPuzzleElements=new HashSet<PuzzleElement>();
             var pendingPuzzleElements=new Queue<PuzzleElement>();
             pendingPuzzleElements.Enqueue(puzzleElement);
@@ -408,6 +408,9 @@ namespace ScaleSokoban{
                     }else{
                         var blocker=puzzleElementColliders[target.y,target.x];
                         if(blocker!=null){
+                            if(limitPushPower&&blocker.big){
+                                return null;
+                            }
                             if(!movingPuzzleElements.Contains(blocker)){
                                 pendingPuzzleElements.Enqueue(blocker);
                                 movingPuzzleElements.Add(blocker);
