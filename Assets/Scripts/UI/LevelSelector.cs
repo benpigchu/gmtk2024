@@ -27,9 +27,11 @@ namespace ScaleSokoban{
             {
                 case MoveDirection.Left:
                     GameManager.Instance.SelectLevel(-1);
+                    AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
                     break;
                 case MoveDirection.Right:
                     GameManager.Instance.SelectLevel(1);
+                    AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
                     break;
                 default:
                     base.OnMove(eventData);

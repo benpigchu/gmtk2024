@@ -59,9 +59,12 @@ namespace ScaleSokoban{
 
         public void EnterLevel(){
             SwitchToGameScreen(GameScreen.Puzzle);
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
 
         void SwitchToGameScreen(GameScreen gameScreen){
+            paused=false;
+            PauseMenu.gameObject.SetActive(false);
             UpdateLevelSelector();
             if(gameScreen==GameScreen.Title){
                 PuzzleManager.Instance.LoadTextLevel(DemoLevel.text,LevelMode.Demo);
@@ -72,8 +75,6 @@ namespace ScaleSokoban{
                 SetupLevelIntro();
             }
             TitleScreen.gameObject.SetActive(gameScreen==GameScreen.Title);
-            paused=false;
-            PauseMenu.gameObject.SetActive(false);
             currentScreen=gameScreen;
         }
 
@@ -101,21 +102,28 @@ namespace ScaleSokoban{
             paused=true;
             PauseMenu.gameObject.SetActive(true);
             PauseLevelText.text=$"level {currentLevel+1:00}";
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
 
         public void Resume(){
             paused=false;
             PauseMenu.gameObject.SetActive(false);
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
         public void Restart(){
             SwitchToGameScreen(GameScreen.Puzzle);
+            LevelIntro.gameObject.SetActive(false);
+            levelIntroVisible=false;
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
         public void ExitToMenu(){
             SwitchToGameScreen(GameScreen.Title);
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
         public void FinishLevelIntro(){
             LevelIntro.gameObject.SetActive(false);
             levelIntroVisible=false;
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Select);
         }
     }
 }
