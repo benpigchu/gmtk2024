@@ -296,7 +296,8 @@ namespace ScaleSokoban{
 
         //movement animation
         interface IAnimationData{
-            public void Seek(float portion);
+            public void Seek(float portion){}
+            public void Start(){}
         }
         struct MoveAnimationData:IAnimationData{
             public PuzzleObject PuzzleObject;
@@ -314,6 +315,12 @@ namespace ScaleSokoban{
             public void Seek(float portion)
             {
                 PuzzleObject.SetBig(Mathf.Lerp(StartBig,EndBig,portion));
+            }
+        }
+        struct SfxAnimationData:IAnimationData{
+            public AudioClip clip;
+            public void Start(){
+                AudioManager.Instance.PlaySfx(clip);
             }
         }
         Queue<List<IAnimationData>> pendingAnimationData=new Queue<List<IAnimationData>>();
@@ -362,6 +369,10 @@ namespace ScaleSokoban{
             if(currentAnimationData==null){
                 if(pendingAnimationData.Count>0){
                     currentAnimationData=pendingAnimationData.Dequeue();
+                    foreach (var animation in currentAnimationData)
+                    {
+                        animation.Start();
+                    }
                     currentAnimationProgress=0;
                 }else{
                     return false;
@@ -376,6 +387,10 @@ namespace ScaleSokoban{
                 }
                 if(pendingAnimationData.Count>0){
                     currentAnimationData=pendingAnimationData.Dequeue();
+                    foreach (var animation in currentAnimationData)
+                    {
+                        animation.Start();
+                    }
                 }else{
                     currentAnimationData=null;
                     break;
@@ -427,6 +442,7 @@ namespace ScaleSokoban{
                         noMovement=false;
                         var animationData=new List<IAnimationData>();
                         MovePuzzleElements(pushingPuzzleElements,directionX,directionY,animationData);
+                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Move});
                         pendingAnimationData.Enqueue(animationData);
                         while(true){
                             var animationBeforeTrigger=pendingAnimationData.Count;
@@ -529,6 +545,7 @@ namespace ScaleSokoban{
                         RemoveCollider(puzzleElement);
                         puzzleElement.big=false;
                         SetupCollider(puzzleElement);
+                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
                         pendingAnimationData.Enqueue(animationData);
                     }
                 }
@@ -656,6 +673,7 @@ namespace ScaleSokoban{
                         RemoveCollider(puzzleElement);
                         puzzleElement.big=true;
                         SetupCollider(puzzleElement);
+                        animationData.Add(new SfxAnimationData{clip=AudioManager.Instance.Scale});
                         pendingAnimationData.Enqueue(animationData);
                     }
                 }
