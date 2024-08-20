@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ScaleSokoban;
+using TMPro;
 using UnityEngine;
 
 
@@ -16,8 +17,14 @@ namespace ScaleSokoban{
         public TextAsset DemoLevel;
 
         public RectTransform TitleScreen;
+        public RectTransform PauseMenu;
         public LevelSelector LevelSelector;
+        public TMP_Text PauseLevelText;
         public static GameManager Instance;
+
+        private bool paused=false;
+
+        public bool BlockPuzzleInput{get=>paused;}
 
         private int currentLevel=0;
         private GameScreen currentScreen=GameScreen.Title;
@@ -55,6 +62,8 @@ namespace ScaleSokoban{
                 PuzzleManager.Instance.LoadTextLevel(Levels[currentLevel].text,LevelMode.Puzzle);
             }
             TitleScreen.gameObject.SetActive(gameScreen==GameScreen.Title);
+            paused=false;
+            PauseMenu.gameObject.SetActive(false);
             currentScreen=gameScreen;
         }
         public void CompleteLevel(){
@@ -64,6 +73,23 @@ namespace ScaleSokoban{
             }else{
                 SwitchToGameScreen(GameScreen.Title);
             }
+        }
+
+        public void Pause(){
+            paused=true;
+            PauseMenu.gameObject.SetActive(true);
+            PauseLevelText.text=$"level {currentLevel+1:00}";
+        }
+
+        public void Resume(){
+            paused=false;
+            PauseMenu.gameObject.SetActive(false);
+        }
+        public void Restart(){
+            SwitchToGameScreen(GameScreen.Puzzle);
+        }
+        public void ExitToMenu(){
+            SwitchToGameScreen(GameScreen.Title);
         }
     }
 }

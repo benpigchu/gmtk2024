@@ -73,11 +73,13 @@ namespace ScaleSokoban{
 
         InputAction MoveAction;
         InputAction UndoAction;
+        InputAction PauseAction;
         private void Awake()
         {
             Instance = this;
             MoveAction=InputSystem.actions.FindAction("Move");
             UndoAction=InputSystem.actions.FindAction("Undo");
+            PauseAction=InputSystem.actions.FindAction("Pause");
         }
 
         void Start()
@@ -333,14 +335,18 @@ namespace ScaleSokoban{
                 }
                 return;
             }
-            if(levelMode==LevelMode.Puzzle&&UndoAction.WasPressedThisFrame()){
+            var inputBlocked=GameManager.Instance.BlockPuzzleInput||levelMode!=LevelMode.Puzzle;
+            if(!inputBlocked&&UndoAction.WasPressedThisFrame()){
                 Undo();
                 return;
+            }
+            if(!inputBlocked&&PauseAction.WasPressedThisFrame()){
+                GameManager.Instance.Pause();
             }
             if(UpdateAnimation()){
                 return;
             }
-            if(levelMode==LevelMode.Puzzle&&MoveAction.WasPressedThisFrame()){
+            if(!inputBlocked&&MoveAction.WasPressedThisFrame()){
                 var moveDirection=MoveAction.ReadValue<Vector2>();
                 var x=Math.Sign(Mathf.RoundToInt(moveDirection.x));
                 var y=-Math.Sign(Mathf.RoundToInt(moveDirection.y));
