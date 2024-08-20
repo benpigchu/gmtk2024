@@ -74,12 +74,14 @@ namespace ScaleSokoban{
         InputAction MoveAction;
         InputAction UndoAction;
         InputAction PauseAction;
+        InputAction RestartAction;
         private void Awake()
         {
             Instance = this;
             MoveAction=InputSystem.actions.FindAction("Move");
             UndoAction=InputSystem.actions.FindAction("Undo");
             PauseAction=InputSystem.actions.FindAction("Pause");
+            RestartAction=InputSystem.actions.FindAction("Restart");
         }
 
         void Start()
@@ -350,6 +352,10 @@ namespace ScaleSokoban{
             }
             if(!inputBlocked&&PauseAction.WasPressedThisFrame()){
                 GameManager.Instance.Pause();
+            }
+            if(!inputBlocked&&RestartAction.WasPressedThisFrame()){
+                GameManager.Instance.Restart();
+                return;
             }
             if(UpdateAnimation()){
                 return;

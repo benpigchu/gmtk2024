@@ -914,7 +914,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Scale Sokoban
+  m_text: Push & Scale
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 441b9fde7137fa94891968b4b3ecac09, type: 2}
   m_sharedMaterial: {fileID: 91311972863775070, guid: 441b9fde7137fa94891968b4b3ecac09, type: 2}
