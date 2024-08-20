@@ -47,7 +47,8 @@ namespace ScaleSokoban{
         }
 
         public Camera MainCamera;
-        public Tilemap Tilemap;
+        public Tilemap BackgroundTilemap;
+        public Tilemap NotationTilemap;
         public GameObject Player;
         public GameObject Box;
 
@@ -55,6 +56,7 @@ namespace ScaleSokoban{
         public Tile Ground;
         public Tile Grow;
         public Tile Shrink;
+        public Tile Target;
 
         public TextAsset InitLevel;
         PuzzleManager Instance;
@@ -161,8 +163,8 @@ namespace ScaleSokoban{
                 puzzleElements.Add(kind,new List<PuzzleElement>());
             }
             puzzleElements[kind].Add(result);
-            result.puzzleObject=Instantiate(GetPrefabFromKind(kind),Tilemap.layoutGrid.transform).GetComponent<PuzzleObject>();
-            result.puzzleObject.Setup(Tilemap.layoutGrid);
+            result.puzzleObject=Instantiate(GetPrefabFromKind(kind),BackgroundTilemap.layoutGrid.transform).GetComponent<PuzzleObject>();
+            result.puzzleObject.Setup(BackgroundTilemap.layoutGrid);
             result.puzzleObject.MoveTo(x,y);
             result.puzzleObject.SetBig(big?1:0);
             SetupCollider(result);
@@ -189,40 +191,47 @@ namespace ScaleSokoban{
                     var tileLocation=CoordToTilemapCoord(x,y);
                     char c=rows[y][x];
                     if(c=='#'){
-                        Tilemap.SetTile(tileLocation,Wall);
-                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
+                        BackgroundTilemap.SetTile(tileLocation,Wall);
+                        BackgroundTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
                         setupWall(x,y,true);
                     }else if(c=='*'){
-                        Tilemap.SetTile(tileLocation,Wall);
-                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1)));
+                        BackgroundTilemap.SetTile(tileLocation,Wall);
+                        BackgroundTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1)));
                         setupWall(x,y,false);
                     }else if(c=='X'){
-                        Tilemap.SetTile(tileLocation,Grow);
-                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
+                        BackgroundTilemap.SetTile(tileLocation,Grow);
+                        BackgroundTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
                         AddPuzzleTrigger(x,y,PuzzleTriggerKind.Grow);
                     }else if(c=='x'){
-                        Tilemap.SetTile(tileLocation,Shrink);
-                        Tilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
+                        BackgroundTilemap.SetTile(tileLocation,Shrink);
+                        BackgroundTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Translate(new Vector3(0,0,-1))*Matrix4x4.Scale(new Vector3(3,3,1)));
                         AddPuzzleTrigger(x,y,PuzzleTriggerKind.Shrink);
+                    }else if(c=='O'){
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
+                        NotationTilemap.SetTile(tileLocation,Target);
+                        NotationTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Scale(new Vector3(3,3,1)));
+                    }else if(c=='o'){
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
+                        NotationTilemap.SetTile(tileLocation,Target);
                     }else if(c=='P'){
-                        Tilemap.SetTile(tileLocation,Ground);
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Player);
                     }else if(c=='p'){
-                        Tilemap.SetTile(tileLocation,Ground);
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,false,PuzzleElementKind.Player);
                     }else if(c=='B'){
-                        Tilemap.SetTile(tileLocation,Ground);
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Box);
                     }else if(c=='b'){
-                        Tilemap.SetTile(tileLocation,Ground);
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,false,PuzzleElementKind.Box);
                     }else{
-                        Tilemap.SetTile(tileLocation,Ground);
+                        BackgroundTilemap.SetTile(tileLocation,Ground);
                     }
                 }
             }
             // setup camera
-            var cameraCenter=Tilemap.layoutGrid.CellToLocalInterpolated(CoordToTilemapCoord(width/2f,height/2f));
+            var cameraCenter=BackgroundTilemap.layoutGrid.CellToLocalInterpolated(CoordToTilemapCoord(width/2f,height/2f));
             cameraCenter.z=MainCamera.transform.position.z;
             MainCamera.transform.position=cameraCenter;
         }
