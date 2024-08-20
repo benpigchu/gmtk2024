@@ -1974,6 +1974,8 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 2a993ed6a91e9e5498ca5d18abaaaba3, type: 3}
   - {fileID: 4900000, guid: daaea4100459d0e4d9b2dfe068a72f9f, type: 3}
   - {fileID: 4900000, guid: 0177950d6329bbe49a61036ab1c3585e, type: 3}
+  - {fileID: 4900000, guid: cfe1d220f8b26444285dd407a42c1c7d, type: 3}
+  - {fileID: 4900000, guid: eb4e031655f947d4bb02f556950dd5a4, type: 3}
   TutorialTexts: {fileID: 4900000, guid: 92681dbc2db9ff548b3777d6bd684c7a, type: 3}
   DemoLevel: {fileID: 4900000, guid: 4ab41128be4a73a4a87341a58cc6651f, type: 3}
   TitleScreen: {fileID: 1476462566}
@@ -1999,7 +2001,7 @@ MonoBehaviour:
   Move: {fileID: 8300000, guid: b03cc49ae7c63b348a03f93d9d9dd20e, type: 3}
   Scale: {fileID: 8300000, guid: 29d8b3c095ff5244b849f515abf26ffc, type: 3}
   Select: {fileID: 8300000, guid: 6a5b3b8f91968794b826bf0d0345ed76, type: 3}
-  Source: {fileID: 0}
+  Source: {fileID: 1430550332}
 --- !u!82 &1430550332
 AudioSource:
   m_ObjectHideFlags: 0
