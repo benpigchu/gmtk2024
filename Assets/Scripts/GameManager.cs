@@ -57,5 +57,8 @@ namespace ScaleSokoban{
             TitleScreen.gameObject.SetActive(gameScreen==GameScreen.Title);
             currentScreen=gameScreen;
         }
+        public void CompleteLevel(){
+            SwitchToGameScreen(GameScreen.Title);
+        }
     }
 }

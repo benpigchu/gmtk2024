@@ -47,6 +47,11 @@ namespace ScaleSokoban{
             public PuzzleObject puzzleObject;
         }
 
+        class PuzzleTarget{
+            public int x,y;
+            public bool big;
+        }
+
         enum PuzzleTriggerKind{
             Grow,
             Shrink,
@@ -92,6 +97,8 @@ namespace ScaleSokoban{
 
         Dictionary<PuzzleElementKind,List<PuzzleElement>> puzzleElements;
         Dictionary<PuzzleTriggerKind,List<Vector2Int>> puzzleTriggers;
+
+        List<PuzzleTarget> puzzleTargets;
 
         static Vector2Int[] offsets3x3=new Vector2Int[]{
             new Vector2Int(-1,-1),
@@ -195,7 +202,6 @@ namespace ScaleSokoban{
                 {
                     foreach (var puzzleElement in puzzleElementsByKind)
                     {
-                        Debug.Log(puzzleElement.kind);
                         Destroy(puzzleElement.puzzleObject.gameObject);
                     }
                 }
@@ -208,6 +214,9 @@ namespace ScaleSokoban{
             puzzleElementColliders=null;
             puzzleElements=null;
             puzzleTriggers=null;
+            puzzleTargets=null;
+            completed=false;
+            completedTimer=0;
         }
 
         public void LoadTextLevel(string level,LevelMode levelMode){
@@ -219,6 +228,7 @@ namespace ScaleSokoban{
             puzzleElementColliders=new PuzzleElement[height,width];
             puzzleElements=new Dictionary<PuzzleElementKind, List<PuzzleElement>>();
             puzzleTriggers=new Dictionary<PuzzleTriggerKind, List<Vector2Int>>();
+            puzzleTargets=new List<PuzzleTarget>();
             // setup ground tilemap
             for(int y=0;y<height;y++){
                 for(int x=0;x<width;x++){
@@ -244,9 +254,19 @@ namespace ScaleSokoban{
                         BackgroundTilemap.SetTile(tileLocation,Ground);
                         NotationTilemap.SetTile(tileLocation,Target);
                         NotationTilemap.SetTransformMatrix(tileLocation,Matrix4x4.Scale(new Vector3(3,3,1)));
+                        puzzleTargets.Add(new PuzzleTarget{
+                            x=x,
+                            y=y,
+                            big=true,
+                        });
                     }else if(c=='o'){
                         BackgroundTilemap.SetTile(tileLocation,Ground);
                         NotationTilemap.SetTile(tileLocation,Target);
+                        puzzleTargets.Add(new PuzzleTarget{
+                            x=x,
+                            y=y,
+                            big=false,
+                        });
                     }else if(c=='P'){
                         BackgroundTilemap.SetTile(tileLocation,Ground);
                         AddPuzzleElement(x,y,true,PuzzleElementKind.Player);
@@ -306,6 +326,13 @@ namespace ScaleSokoban{
             if(!levelLoaded){
                 return;
             }
+            if(completed){
+                completedTimer+=Time.deltaTime;
+                if(completedTimer>CompleteTimeLength){
+                    GameManager.Instance.CompleteLevel();
+                }
+                return;
+            }
             if(levelMode==LevelMode.Puzzle&&UndoAction.WasPressedThisFrame()){
                 Undo();
                 return;
@@ -353,6 +380,8 @@ namespace ScaleSokoban{
                 {
                     animation.Seek(currentAnimationProgress);
                 }
+            }else{
+                CheckPuzzleComplete();
             }
             return true;
         }
@@ -689,7 +718,29 @@ namespace ScaleSokoban{
             }
             ApplyPuzzleObjectStates();
         }
-    }
 
+        //level complete check
+
+        bool completed=false;
+        float completedTimer=0;
+        public float CompleteTimeLength=1f;
+        void CheckPuzzleComplete(){
+            if(levelMode!=LevelMode.Puzzle){
+                return;
+            }
+            foreach (var target in puzzleTargets)
+            {
+                var puzzleElement=puzzleElementColliders[target.y,target.x];
+                if(puzzleElement==null){
+                    return;
+                }
+                if(puzzleElement.x!=target.x||puzzleElement.y!=target.y||puzzleElement.big!=target.big){
+                    return;
+                }
+            }
+            completed=true;
+            completedTimer=0;
+        }
+    }
 
 }
