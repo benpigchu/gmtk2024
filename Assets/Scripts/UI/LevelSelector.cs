@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 
 namespace ScaleSokoban{
-    public class LevelSelector : Selectable
+    public class LevelSelector : Selectable, ISubmitHandler
     {
 
         public TMP_Text text;
@@ -39,10 +39,15 @@ namespace ScaleSokoban{
         }
 
         public void UpdateText(int level,bool first,bool last){
-            string center=$"level {level:00}";
+            string center=$"level {level+1:00}";
             string left=first?"   ":"<  ";
             string right=last?"   ":">  ";
             text.text=left+center+right;
+        }
+
+        public virtual void OnSubmit(BaseEventData eventData)
+        {
+            GameManager.Instance.EnterLevel();
         }
     }
 }

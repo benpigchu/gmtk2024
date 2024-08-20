@@ -7,6 +7,10 @@ using UnityEngine;
 namespace ScaleSokoban{
     public class GameManager : MonoBehaviour
     {
+        enum GameScreen{
+            Title,
+            Puzzle,
+        }
         public List<TextAsset> Levels=new List<TextAsset>();
         public TextAsset TutorialTexts;
         public TextAsset DemoLevel;
@@ -16,20 +20,16 @@ namespace ScaleSokoban{
         public static GameManager Instance;
 
         private int currentLevel=0;
+        private GameScreen currentScreen=GameScreen.Title;
         private void Awake()
         {
             Instance = this;
         }
         void Start()
         {
-            PuzzleManager.Instance.LoadTextLevel(DemoLevel.text,LevelMode.Demo);
-            UpdateLevelSelector();
+            SwitchToGameScreen(GameScreen.Title);
         }
 
-        void Update()
-        {
-
-        }
         public void UpdateLevelSelector(){
             LevelSelector.UpdateText(currentLevel,currentLevel<=0,currentLevel>=Levels.Count-1);
         }
@@ -41,6 +41,21 @@ namespace ScaleSokoban{
                 currentLevel=targetLevel;
                 UpdateLevelSelector();
             }
+        }
+
+        public void EnterLevel(){
+            SwitchToGameScreen(GameScreen.Puzzle);
+        }
+
+        void SwitchToGameScreen(GameScreen gameScreen){
+            UpdateLevelSelector();
+            if(gameScreen==GameScreen.Title){
+                PuzzleManager.Instance.LoadTextLevel(DemoLevel.text,LevelMode.Demo);
+            }else if(gameScreen==GameScreen.Puzzle){
+                PuzzleManager.Instance.LoadTextLevel(Levels[currentLevel].text,LevelMode.Puzzle);
+            }
+            TitleScreen.gameObject.SetActive(gameScreen==GameScreen.Title);
+            currentScreen=gameScreen;
         }
     }
 }
