@@ -58,7 +58,12 @@ namespace ScaleSokoban{
             currentScreen=gameScreen;
         }
         public void CompleteLevel(){
-            SwitchToGameScreen(GameScreen.Title);
+            if(currentLevel+1<Levels.Count){
+                currentLevel+=1;
+                SwitchToGameScreen(GameScreen.Puzzle);
+            }else{
+                SwitchToGameScreen(GameScreen.Title);
+            }
         }
     }
 }

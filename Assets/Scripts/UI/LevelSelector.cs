@@ -41,7 +41,7 @@ namespace ScaleSokoban{
         public void UpdateText(int level,bool first,bool last){
             string center=$"level {level+1:00}";
             string left=first?"   ":"<  ";
-            string right=last?"   ":">  ";
+            string right=last?"   ":"  >";
             text.text=left+center+right;
         }
 

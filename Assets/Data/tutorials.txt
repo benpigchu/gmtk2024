@@ -1,1 +1,2 @@
-Let's start with a totally normal sokoban
+Let's start with a totally normal sokoban.
+Scale yourself with the shrinker pad.
