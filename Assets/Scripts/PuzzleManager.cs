@@ -749,6 +749,7 @@ namespace ScaleSokoban{
             }
             completed=true;
             completedTimer=0;
+            AudioManager.Instance.PlaySfx(AudioManager.Instance.Complete);
         }
     }
 
